@@ -1,0 +1,99 @@
+[
+  {
+    "session": 6,
+    "date": "2026-01-28",
+    "focus": "Refund workflow and partial refund clarification",
+    "files": [
+      "docs/module5-workflows/readme.md",
+      "docs/module3-services/paymentService.md",
+      "docs/module2-api/webhooksEndpoints.md",
+      "docs/module6-docMaintenance/documentationProgress.md",
+      "docs/module6-docMaintenance/changelog.json",
+      "docs/module6-docMaintenance/changelog.md"
+    ],
+    "summary": "Added refund workflow to module5-workflows covering the Stripe-initiated refund flow, documented partial refund non-support explicitly in PaymentService and webhooks, and clarified that charge.refunded events for partial amounts are logged but produce no status change."
+  },
+  {
+    "session": 5,
+    "date": "2026-01-20",
+    "focus": "Fulfilment partner webhook events and routing failure handling",
+    "files": [
+      "docs/module2-api/webhooksEndpoints.md",
+      "docs/module3-services/orderService.md",
+      "docs/module5-workflows/readme.md",
+      "docs/module6-docMaintenance/documentationProgress.md",
+      "docs/module6-docMaintenance/changelog.json",
+      "docs/module6-docMaintenance/changelog.md"
+    ],
+    "summary": "Documented the fulfilment partner webhook endpoint in full including all supported event types and their order status transitions, added routing failure behaviour to OrderService docs, and added the fulfilment partner dispatch workflow scenario."
+  },
+  {
+    "session": 4,
+    "date": "2026-01-15",
+    "focus": "Payments endpoint, PaymentService, and Payment schema",
+    "files": [
+      "docs/module2-api/paymentsEndpoints.md",
+      "docs/module3-services/paymentService.md",
+      "docs/module4-dataModels/paymentSchema.md",
+      "docs/module2-api/readme.md",
+      "docs/index.md",
+      "docs/module6-docMaintenance/documentationProgress.md",
+      "docs/module6-docMaintenance/changelog.json",
+      "docs/module6-docMaintenance/changelog.md"
+    ],
+    "summary": "Created full documentation for the payments API endpoint, PaymentService methods (createIntent, syncFromStripeEvent, getById), and the Payment Mongoose schema including the unique orderId index, PaymentStatus enum, and denormalisation rationale for customerId."
+  },
+  {
+    "session": 3,
+    "date": "2026-01-10",
+    "focus": "Orders endpoints, OrderService, and Order schema",
+    "files": [
+      "docs/module2-api/ordersEndpoints.md",
+      "docs/module3-services/orderService.md",
+      "docs/module4-dataModels/orderSchema.md",
+      "docs/module2-api/readme.md",
+      "docs/index.md",
+      "docs/module6-docMaintenance/documentationProgress.md",
+      "docs/module6-docMaintenance/changelog.json",
+      "docs/module6-docMaintenance/changelog.md"
+    ],
+    "summary": "Created full documentation for all four orders API endpoints (create, get, patch status, list), the OrderService state machine and all methods, and the Order Mongoose schema including Item and Address sub-documents, enum values, and index definitions."
+  },
+  {
+    "session": 2,
+    "date": "2025-11-14",
+    "focus": "Services layer, data models overview, and workflows foundation",
+    "files": [
+      "docs/module3-services/readme.md",
+      "docs/module3-services/aicontext.md",
+      "docs/module3-services/notificationService.md",
+      "docs/module4-dataModels/readme.md",
+      "docs/module4-dataModels/aicontext.md",
+      "docs/module5-workflows/readme.md",
+      "docs/module5-workflows/aicontext.md",
+      "docs/index.md",
+      "docs/module6-docMaintenance/documentationProgress.md",
+      "docs/module6-docMaintenance/changelog.json",
+      "docs/module6-docMaintenance/changelog.md"
+    ],
+    "summary": "Documented the services architecture overview with Mermaid flowchart, NotificationService in full (emit pattern, all event types, SMTP config, fire-and-forget failure behaviour), data models conventions and index strategy, and the happy path and payment failure workflow scenarios."
+  },
+  {
+    "session": 1,
+    "date": "2025-10-01",
+    "focus": "Initial documentation structure — global context, getting started, API overview",
+    "files": [
+      "docs/index.md",
+      "docs/aicontext.md",
+      "docs/module1-gettingStarted/readme.md",
+      "docs/module1-gettingStarted/aicontext.md",
+      "docs/module2-api/readme.md",
+      "docs/module2-api/aicontext.md",
+      "docs/module6-docMaintenance/documentationMaintenanceGuide.md",
+      "docs/module6-docMaintenance/documentationProgress.md",
+      "docs/module6-docMaintenance/changelog.json",
+      "docs/module6-docMaintenance/changelog.md"
+    ],
+    "summary": "Created the complete initial documentation structure for Orderflow: master index, global AI context (order lifecycle, idempotency, webhook verification, integration-test-only rule), getting started guide with full environment variable reference, API overview with authentication and error format, and the doc-maintenance system."
+  }
+]
