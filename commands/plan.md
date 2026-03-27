@@ -4,6 +4,26 @@ This workflow creates a new plan folder under `plans/` in the project root with 
 
 ---
 
+## CRITICAL: EXECUTE.md Trigger
+
+If the user's message references, links, quotes, or opens any file named `EXECUTE.md`:
+
+- STOP. Do NOT read `EXECUTE.md`.
+- Read ONLY `03-implementation-sessions.md`.
+- Find the first session that has at least one unchecked `[ ]` item.
+- Present ONLY that session's diff in chat as markdown code blocks.
+- Do NOT use any file modification tools until the user explicitly approves.
+- Do NOT mention, preview, or acknowledge any other session.
+- Do NOT summarise the overall plan or state how many sessions remain.
+- End your response by asking: "Approve this session?"
+
+To advance to the next session after approval and checklist update, the user will say one of:
+- "next", "continue", "proceed", "approved", or "done"
+
+On receiving any of those signals after a session is marked complete, read `03-implementation-sessions.md` again, find the next incomplete session, and repeat the same protocol.
+
+---
+
 ## Step 0: Load Project Context
 
 Before anything else, load the project's knowledge base:
@@ -185,77 +205,27 @@ Each session block must follow this structure:
 
 ## Step 5: Structure of `EXECUTE.md`
 
-The execute file is the granular, step-by-step companion. It must:
+`EXECUTE.md` is a **protocol file only**. It must never contain code, file paths, session titles, diffs, step listings, or any plan content. All of that lives exclusively in `03-implementation-sessions.md`.
 
-- Reference each session from `03-implementation-sessions.md` as a top-level section
-- Break each change down to the **smallest independently verifiable unit** (one function, one schema field, one validator rule, etc.)
-- State prerequisites at the top of each session — never assume prior sessions are done
-- Contain **no inline checklists** — all checklist tracking lives exclusively in `03-implementation-sessions.md`
-- At the end of every session, include a **mandatory update block** instructing to mark the session checklist in `03-implementation-sessions.md` before asking the user to verify
-
-### EXECUTE.md Execution Rules (enforced at runtime — never violate these)
-
-> **THE SINGLE-SESSION PRINCIPLE:** The AI's entire mental scope during execution is ONE session. It must not read ahead, think ahead, plan ahead, or acknowledge the existence of any session beyond the current one. The current session is the only session that exists until the user explicitly moves forward.
-
-When a user references or opens an `EXECUTE.md` file, the AI **must** follow these rules without exception:
-
-0. **Identify the current session first.** Before proposing any change, read `03-implementation-sessions.md` to find the first session whose checklist is not fully marked `[x]`. That is the current session. Announce only that session number and title, then propose its diff. Do not mention any other session.
-   - **CRITICAL AI INSTRUCTION:** "Proposing its diff" means printing the exact code changes as markdown blocks in the chat response. YOU MUST NOT USE ANY FILE MODIFICATION TOOLS (e.g., `replace_file_content`) AT THIS STAGE.
-1. **One session at a time — strictly enforced.** Present the proposed diff/changes for the **current session only**. Never present changes for Session N+1 alongside Session N. This is the most important rule in this entire document.
-   - Do NOT read the contents of future sessions from `EXECUTE.md` or `03-implementation-sessions.md` beyond the current one.
-   - Do NOT mention what future sessions will do, even as a preview, teaser, or "coming up next".
-   - Do NOT reference future session numbers, titles, goals, or file lists.
-   - Do NOT say "there are N sessions remaining" or "next we will…" or any forward-looking statement.
-   - The AI's response must end after presenting the current session and asking for approval. Nothing else.
-2. **Stop and wait.** After presenting a session's expected changes in chat text, ask the user a single yes/no question: approve or adjust. Do NOT proceed with tool execution until the user explicitly approves.
-   - ONLY AFTER AUTHORIZATION: Once the user says "approve", you are allowed to use your tools to actually modify the project files.
-   - After approval, execute ONLY the changes for the approved session. Do not sneak in changes from other sessions.
-3. **No pre-emptive batching.** Even if multiple sessions appear trivial, they must be proposed individually. Batching is forbidden regardless of session size or dependency.
-   - This includes summarising all sessions as a "proposed plan" before implementation. That is batching. It is forbidden.
-   - This includes saying "Sessions 2-4 are simple so I'll combine them". That is batching. It is forbidden.
-   - This includes "here's an overview of what's left". That is scoping beyond the current session. It is forbidden.
-4. **Checklist update before handoff.** After you have executed the tools and the user confirms a session is done, update the checklist in `03-implementation-sessions.md` before presenting the next session.
-5. **Violation is a hard failure.** If these rules are not followed, the execution has failed. The user must be able to trust that nothing is touched beyond the session they approved.
-   - If the AI realises mid-response that it has violated these rules (e.g., it has begun describing Session N+1 or using tools before approval), it must **immediately stop**, discard the extra content, and re-present only the current session.
-   - Mentioning future sessions in any capacity counts as a violation.
-   - Reading or summarising code from files that are only relevant to future sessions counts as a violation.
-   - Making file edits that belong to a future session counts as a violation — even if they seem "small" or "related".
-6. **HARD STOP AFTER CHECKLIST UPDATE.** After executing the tools and updating the checklist in `03-implementation-sessions.md` for Session N, you MUST STOP GENERATING TEXT AND WAIT for the user to reply. DO NOT immediately propose the plan or changes for the next session (Session N+1) in the same response. You must wait for the user to confirm they have verified the changes and are ready to proceed.
-   - This means your message ends with something like: "Session N is complete. Checklist updated. Ready when you are." — and nothing more.
-   - Any text after this acknowledgement that describes, previews, or begins Session N+1 is a violation.
-7. **No scope creep within a session.** When executing an approved session, implement exactly what the session describes — nothing more, nothing less. Do not "while I'm here" fix adjacent code, refactor nearby functions, or add improvements not specified in the session. If you notice something that should be fixed, note it for a future session — do not act on it now.
+The file must be 5 lines maximum. Use this exact template — nothing else:
 
 ```markdown
 # EXECUTE — {Subject}
 
-> Work through this file session by session.
-> After completing each session, update the checklist in `03-implementation-sessions.md` before asking the user to verify.
-
----
-
-## Session 1: {Title}
-
-**Prerequisites:** None
-**Goal:** {goal}
-
-### Step 1.1
-
-**File:** `src/path/to/file.ts`
-**Change:** {description of the exact change}
-
-### Step 1.2
-
-**File:** `src/path/to/file.ts`
-**Change:** {description}
-
----
-
-> **Before asking the user to verify:** update the Session 1 checklist in `03-implementation-sessions.md` — mark each item `[x]` if done or `[-]` if skipped (with a short reason). A session is only complete once the checklist in the implementation file reflects the correct status.
-
----
-
-## Session 2: ...
+> Read `03-implementation-sessions.md`.
+> Find the first session with an unchecked `[ ]` item.
+> Present only that session's diff. Wait for approval.
+> After executing and updating the checklist, stop and wait.
+> User says "next" to advance.
 ```
+
+### Execution rules (enforced at runtime)
+
+- One session at a time. Never present Session N+1 alongside Session N.
+- Do NOT use file modification tools until the user explicitly approves.
+- After approval, execute ONLY the approved session — no scope creep.
+- After executing, update the checklist in `03-implementation-sessions.md`, then stop. End with: "Session N complete. Ready when you are." — nothing more.
+- Do NOT mention future sessions, remaining session counts, or what comes next.
 
 ---
 

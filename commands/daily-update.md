@@ -51,31 +51,43 @@ git log --since="midnight" --pretty=format:"%h - %s (%an, %ar)" --no-merges
 
 ```
 - [Description of the actual change made]. -Done.
-- [Description of the actual change made]. -Done.
-- [Description of the actual change made]. -Done.
+- [Description of the actual change made]. -Pending.
+- [Description of the actual change made]. -In Progress.
+- [Description of the actual change made]. -Blocked.
+- [Description of the actual change made]. -Cancelled.
 ```
 
 **Important formatting rules:**
 - Each update item is on its own line
-- Format: `- [Description]. -Done.`
-- Note: There is a space before `-Done.`
-- Each description ends with a period before `-Done.`
+- Format: `- [Description]. -[Status].`
+- Note: There is a space before the status tag
+- Each description ends with a period before the status tag
 - No blank lines between items
 - No final summary or closing statement
 
+**Available statuses:**
+- `-Done.` — change is complete and committed
+- `-Pending.` — change is planned or waiting to start
+- `-In Progress.` — change is partially implemented
+- `-Blocked.` — change is blocked by a dependency or issue
+- `-Cancelled.` — change was scoped but dropped
+
 **Example output:**
 ```
-- Added optional PAN field to bank details with format validation. -Done.
-- Added 'doctor' and 'therapist' occupations and optional registration_number to user profiles. -Done.
-- Implemented payment reconciliation cron job to auto-capture pending Razorpay payments every 5 minutes. -Done.
-- Made registration_number mandatory for doctors during profile creation/editing. -Done.
-- Enhanced admin user search to include registration_number for doctor searches. -Done.
-- Moved role field to top level in referral data structure (from referred object to referrer). -Done.
-- Implemented provider joining fee payment system with Razorpay integration. -Done.
-- Implemented doctor-assisted booking flow with user assignment, validation, and notifications. -Done.
-- Refactored service routes to doctorRouter with role-based access control. -Done.
-- Fixed optional order_id handling in booking notification payload. -Done.
-- Restructured documentation into organized section-based folders with topic files and READMEs. -Done.
+- Added optional email field to user profile with format validation. -Done.
+- Added role-based access control to the admin dashboard routes. -Done.
+- Implemented scheduled job to process pending queue items every 5 minutes. -Done.
+- Made phone number mandatory for users during profile creation. -Done.
+- Enhanced search to filter results by user status. -Done.
+- Moved metadata field to top level in event payload structure. -Done.
+- Implemented payment integration with order creation and callback handling. -Done.
+- Implemented assisted booking flow with assignment, validation, and notifications. -Done.
+- Refactored service routes with role-based access control middleware. -Done.
+- Fixed optional field handling in notification payload. -Done.
+- Restructured documentation into organised section-based folders with topic files. -Done.
+- Migrate legacy auth tokens to new session model. -Pending.
+- Add retry logic to outbound webhook dispatcher. -In Progress.
+- Resolve rate-limiting issue on third-party API integration. -Blocked.
 ```
 
 ## Important Notes
@@ -84,4 +96,4 @@ git log --since="midnight" --pretty=format:"%h - %s (%an, %ar)" --no-merges
 - Keep descriptions concise but informative (one line per item)
 - Use past tense verbs (Added, Implemented, Fixed, Refactored, Enhanced, etc.)
 - Each item should clearly describe a functional change
-- Every line must end with `. -Done.` (period, space, hyphen, Done, period)
+- Every line must end with `. -[Status].` where status is one of: Done, Pending, In Progress, Blocked, Cancelled
