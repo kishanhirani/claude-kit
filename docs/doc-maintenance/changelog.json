@@ -1,0 +1,58 @@
+[
+  {
+    "session": 3,
+    "date": "2026-03-28",
+    "focus": "update-docs skill — new command and documentation",
+    "files": [
+      "commands/update-docs.md",
+      "docs/commands/updateDocsCommand.md",
+      "docs/commands/readme.md",
+      "docs/index.md",
+      "docs/doc-maintenance/documentationMaintenanceGuide.md",
+      "docs/doc-maintenance/documentationProgress.md",
+      "docs/doc-maintenance/changelog.json",
+      "docs/doc-maintenance/changelog.md"
+    ],
+    "summary": "Added /update-docs skill — a session-aware command that reads a documentation maintenance guide and updates the relevant docs based on changes made in the current conversation, requiring only the guide path as an argument."
+  },
+  {
+    "session": 2,
+    "date": "2026-03-27",
+    "focus": "create-docs skill — new command and documentation",
+    "files": [
+      "commands/create-docs.md",
+      "docs/commands/createDocsCommand.md",
+      "docs/commands/readme.md",
+      "docs/commands/aicontext.md",
+      "docs/index.md",
+      "docs/doc-maintenance/documentationProgress.md",
+      "docs/doc-maintenance/changelog.json",
+      "docs/doc-maintenance/changelog.md"
+    ],
+    "summary": "Added /create-docs skill — a plan-generating command that inventories a codebase, classifies documentation gaps, and produces a session-driven plan folder (EXECUTE.md + 03-documentation-sessions.md) for creating all missing docs across many conversations using the Single-Session Principle."
+  },
+  {
+    "session": 1,
+    "date": "2026-03-27",
+    "focus": "Initial documentation structure",
+    "files": [
+      "docs/index.md",
+      "docs/aicontext.md",
+      "docs/commands/readme.md",
+      "docs/commands/aicontext.md",
+      "docs/commands/commitCommand.md",
+      "docs/commands/planCommand.md",
+      "docs/commands/dailyUpdateCommand.md",
+      "docs/gettingStarted/readme.md",
+      "docs/gettingStarted/aicontext.md",
+      "docs/workflows/readme.md",
+      "docs/workflows/aicontext.md",
+      "docs/doc-maintenance/documentationMaintenanceGuide.md",
+      "docs/doc-maintenance/syncGuide.md",
+      "docs/doc-maintenance/documentationProgress.md",
+      "docs/doc-maintenance/changelog.json",
+      "docs/doc-maintenance/changelog.md"
+    ],
+    "summary": "Created complete initial documentation structure for claude-kit covering all three skills (commit, plan, daily-update), getting started guide, workflow patterns, and the full doc-maintenance system including sync guide and progress tracker."
+  }
+]
