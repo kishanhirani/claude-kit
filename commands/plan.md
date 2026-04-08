@@ -24,7 +24,7 @@ On receiving any of those signals after a session is marked complete, read `03-i
 
 ---
 
-## Step 0: Load Project Context
+## Step 0: Load Project Context & Prepare Dependency Analysis
 
 Before anything else, load the project's knowledge base:
 
@@ -39,7 +39,23 @@ Before anything else, load the project's knowledge base:
    - White-label / Agency / Branding → `docs/white-label/`
    - Infrastructure / DB / Cron / Logging → `docs/system-internals/`
 3. If an `aicontext.md` exists inside the identified domain folder(s), read it for domain-specific context.
-4. Read `docs/doc-maintenance/documentationMaintenanceGuide.md` — formatting rules, changelog procedures, and documentation file map.
+4. Read `docs/doc-maintenance/documentationMaintenanceGuide.md` — formatting rules, changelog procedures, code-review-graph integration, and documentation file map.
+
+**NEW: Code-Review-Graph Dependency Analysis**
+
+5. **Identify the entry-point file(s)** for this task (e.g., the main service, router, or controller being added/modified).
+6. **Run code-review-graph to identify affected files:**
+   ```bash
+   code-review-graph detect-changes <entry-point-file>
+   ```
+   This produces a risk-scored impact analysis showing:
+   - Which files depend on the entry-point (dependencies that may need updating)
+   - Risk scores for each dependent (prioritize reading high-risk files first)
+   - Transitive dependencies (files affected indirectly)
+
+7. **Use the graph output to build a "files to examine" list** — only read files identified by the graph, not the entire directory. This reduces context usage by ~27x and ensures completeness.
+
+8. **Note the graph data in `01-current-state.md`** under a "Dependency Analysis" section showing which files are affected by changes to the entry-point.
 
 This context informs every subsequent step. Use the **Key Project Terminology** section to ensure consistent language throughout the plan (e.g., "Business" = GBP entity, "Moment" = AI-assisted post, "Agency" = white-label tenant, etc.).
 
@@ -86,16 +102,29 @@ Ask as many pointed logic questions as needed to fully understand the task. At m
 
 ---
 
-## Step 2: Read the Codebase & Analyse Risks
+## Step 2: Read the Codebase Using Graph-Guided File Selection & Analyse Risks
 
-Before writing any plan document, read the actual source files that are in scope. Do not write `01-current-state.md` from assumptions — read the real code first.
+**Use the code-review-graph output from Step 0 to identify exactly which files to read** — avoid speculative reading.
 
-Key files to always check:
-- `src/routes/apiRouter.ts` — to understand existing route registration and middleware guards
-- Relevant schema files in `src/schema/`
+From Step 0, you have a list of files identified by `code-review-graph detect-changes`:
+- **High-risk dependents** (read first — changes to these will be most visible)
+- **Direct imports** (read early — may break if entry-point changes)
+- **Transitive dependencies** (read if risk score is significant)
+- **Unrelated files** (skip entirely — saves ~27x context)
+
+**Read files in this order:**
+1. **Entry-point file** (the file you're modifying — identified in Step 0)
+2. **High-risk dependents** from graph output (prioritized by risk score)
+3. **Direct importer files** from graph output
+4. **Supporting files** (schemas, validators, utilities) only if graph shows high coupling
+5. Skip files not in the graph output — they're unlikely to be affected
+
+**Always read these baseline files (if not yet read):**
+- `src/routes/apiRouter.ts` — to understand existing route registration and middleware guards (if adding/modifying routes)
+- Relevant schema files in `src/schema/` (if modifying data models)
 - Relevant service files in `src/services/` (note: many large services have been modularized into sub-folders — check for `index.ts` barrel files)
-- Relevant controller files in `src/controllers/`
-- Any existing validator files that might be extended
+- Relevant controller files in `src/controllers/` (if adding/modifying endpoints)
+- Any existing validator files that might be extended (if adding validation)
 - Existing documentation for the affected domain (from Step 0 domain mapping) — to understand what docs already say and avoid contradictions
 
 While reading, simultaneously perform a risk analysis across all in-scope files. This analysis feeds directly into `02-problems-and-caveats.md` — it is done during the planning phase, not before execution. For every file, service, schema, and route, identify and document:
@@ -144,7 +173,7 @@ Create the following files inside `plans/{kebab-case-subject}-plan/`:
 
 | File | Purpose |
 |---|---|
-| `01-current-state.md` | Exact snapshot of the current codebase state relevant to this task — schemas, routes, services, middleware. Must be sourced from actually reading the files in Step 2. |
+| `01-current-state.md` | Exact snapshot of the current codebase state relevant to this task — schemas, routes, services, middleware. Must be sourced from actually reading the files in Step 2. **Include a "Dependency Analysis" section** showing which files are affected by changes to the entry-point (from code-review-graph). |
 | `02-problems-and-caveats.md` | All known issues, edge cases, gotchas, and constraints identified. |
 | `03-implementation-sessions.md` | Full implementation plan broken into numbered sessions. Each session must be self-contained and verifiable. |
 | `EXECUTE.md` | Granular execution guide — one step per atomic change, referencing exact file paths. Designed to be followed session-by-session with a stop-and-verify checkpoint after each session. |
@@ -298,3 +327,17 @@ These apply across all plan files and execution:
 - **No fragmented docs:** Never create "v2", "notes", or "update" suffixed documentation files. Edit existing files only.
 - **Consistent terminology:** Use the Key Project Terminology from `docs/aicontext.md` throughout all plan files.
 - **Breadcrumbs:** Every documentation file must start with a breadcrumb link to `[Documentation Index](../index.md)`.
+
+---
+
+## Code-Review-Graph Integration (Context Optimization)
+
+**Use code-review-graph to reduce context usage by 27x through precision file selection:**
+
+- **Step 0:** Run `code-review-graph detect-changes <entry-point-file>` to identify affected files upfront
+- **Step 2:** Only read files identified by the graph + baseline files; skip unrelated files
+- **01-current-state.md:** Include "Dependency Analysis" section with graph output showing which files depend on the entry-point
+- **Risk scores from graph:** Prioritize reading high-risk dependents first (most likely to break if entry-point changes)
+- **Result:** Complete plan with no guessing, 27x less context usage
+
+See `docs/doc-maintenance/documentationMaintenanceGuide.md#code-review-graph-integration` for full workflow details and examples.
