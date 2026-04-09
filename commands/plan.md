@@ -44,14 +44,13 @@ Before anything else, load the project's knowledge base:
 **NEW: Code-Review-Graph Dependency Analysis**
 
 5. **Identify the entry-point file(s)** for this task (e.g., the main service, router, or controller being added/modified).
-6. **Run code-review-graph to identify affected files:**
-   ```bash
-   code-review-graph detect-changes <entry-point-file>
-   ```
-   This produces a risk-scored impact analysis showing:
-   - Which files depend on the entry-point (dependencies that may need updating)
-   - Risk scores for each dependent (prioritize reading high-risk files first)
-   - Transitive dependencies (files affected indirectly)
+6. **Run code-review-graph MCP tools to identify affected files:**
+   - Call `get_minimal_context(task="<task description>")` first
+   - Call `get_impact_radius(changed_files=["<entry-point-file>"], detail_level="minimal")` for blast radius
+   - Call `query_graph(pattern="importers_of", target="<entry-point-file>", detail_level="minimal")` for direct dependents
+
+   This produces a risk-scored impact analysis showing which files depend on the entry-point, their risk scores, and transitive dependencies.
+   **Never use `code-review-graph detect-changes` here — it reads git-staged diffs only, not explicit files.**
 
 7. **Use the graph output to build a "files to examine" list** — only read files identified by the graph, not the entire directory. This reduces context usage by ~27x and ensures completeness.
 
@@ -332,12 +331,13 @@ These apply across all plan files and execution:
 
 ## Code-Review-Graph Integration (Context Optimization)
 
-**Use code-review-graph to reduce context usage by 27x through precision file selection:**
+**Use the code-review-graph MCP server tools — not the CLI — for precision file selection:**
 
-- **Step 0:** Run `code-review-graph detect-changes <entry-point-file>` to identify affected files upfront
-- **Step 2:** Only read files identified by the graph + baseline files; skip unrelated files
-- **01-current-state.md:** Include "Dependency Analysis" section with graph output showing which files depend on the entry-point
-- **Risk scores from graph:** Prioritize reading high-risk dependents first (most likely to break if entry-point changes)
+- **Step 0:** Call `get_minimal_context(task="...")` first, then `get_impact_radius(changed_files=["<entry-point>"], detail_level="minimal")` and `query_graph(pattern="importers_of", target="<entry-point>", detail_level="minimal")`
+- **Step 2:** Only read files identified by the MCP output + baseline files; skip unrelated files
+- **01-current-state.md:** Include "Dependency Analysis" section with MCP output showing which files depend on the entry-point
+- **Risk scores:** Prioritize reading high-risk dependents first (most likely to break)
+- **detect-changes CLI:** Do not use for planning — it only reads git-staged diffs
 - **Result:** Complete plan with no guessing, 27x less context usage
 
 See `docs/doc-maintenance/documentationMaintenanceGuide.md#code-review-graph-integration` for full workflow details and examples.
