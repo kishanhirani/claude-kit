@@ -66,9 +66,11 @@ The argument is the path to the maintenance guide. The skill reads that guide an
 
 1. Read the maintenance guide at `$ARGUMENTS`
 2. Review the changes made in the current conversation
-3. Use the guide's Documentation File Map and update rules to identify which documentation files are affected
-4. Update each affected file — only the relevant sections
-5. Update the changelog as the final step
+3. For each source file modified in the session, call `query_graph(pattern="importers_of", target="<file>", detail_level="minimal")` to find dependents that may also need doc updates
+4. Use the guide's Documentation File Map and the graph output to identify which documentation files are affected
+5. Update each affected file — only the relevant sections
+6. Run `code-review-graph update` to keep the graph current after the session's file changes
+7. Update the changelog as the final step
 
 ---
 

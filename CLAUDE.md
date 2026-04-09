@@ -1,9 +1,25 @@
 # Project Rules
 
 ## MCP Servers
-- Context7 MCP is available: always use it to fetch up-to-date docs for Node.js, Express, Mongoose, and any npm package before generating code.
-- Filesystem MCP is available: read actual project files before proposing changes — never assume file structure or contents.
-- Sequential Thinking MCP is available: always use it for multi-step tasks, architecture decisions, debugging complex issues, and anything requiring a plan before implementation.
+
+### Filesystem MCP — OUTSIDE-WORKSPACE FILES ONLY
+
+> [!WARNING]
+> For all files inside the project workspace, use native tools exclusively: Read, Edit, Write, Glob, Grep. Native tools produce proper diffs, integrate with the approval flow, and are permission-sandboxed. Using Filesystem MCP tools for in-project files is a violation.
+
+Use Filesystem MCP **only** when accessing paths outside the current workspace — e.g. `~/.config/`, system files, or paths registered in the MCP server's allowed directories but not in the repo.
+
+- **`mcp__filesystem__read_file`** — reading files outside the workspace
+- **`mcp__filesystem__write_file`** — writing files outside the workspace
+- **`mcp__filesystem__directory_tree`** — inspecting directory structure outside the workspace
+
+Read actual project files before proposing any changes. Never assume file structure or contents.
+
+### Context7 MCP
+Always use it to fetch up-to-date docs for Node.js, Express, Mongoose, and any npm package before generating code.
+
+### Sequential Thinking MCP
+Always use it for multi-step tasks, architecture decisions, debugging complex issues, and anything requiring a plan before implementation.
 
 ## CLI Tools & Utilities
 - **code-review-graph** (globally installed): Use to analyze code dependencies and reduce context usage by 27x on medium-large codebases.

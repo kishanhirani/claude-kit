@@ -33,6 +33,7 @@ Before proposing any documentation changes, the AI **must** review:
 - **Single-Session Principle:** The hard rule in `/plan` execution — Claude presents, waits for approval, executes, then stops. Never previews future sessions.
 - **Daily Update:** The `/daily-update` skill that reads `git log` for the current day, filters cleanup noise, and outputs a concise done-list.
 - **aicontext.md:** An AI-readable context file placed in each docs folder. It gives AI assistants domain-specific terminology, code paths, formatting rules, and strict constraints. Essential for AI-assisted documentation and code generation.
+- **code-review-graph:** A globally installed CLI and MCP server that parses the codebase into a dependency graph. Used in `/plan`, `/create-docs`, and `/update-docs` to identify which files are affected by a change, their risk scores, and module community boundaries — replacing speculative full-directory reads with precision file selection. MCP tools are used during skill execution; the `update` CLI command is run after sessions complete to keep the graph current.
 
 ---
 
@@ -92,6 +93,22 @@ allowed-tools: Bash(git diff --cached*), Bash(git status*)
 ```
 
 The `allowed-tools` field restricts which tools Claude Code can invoke when running the skill. Omitting it grants no tools. Wildcards (`*`) allow all sub-commands of a prefix.
+
+### Code-Review-Graph Usage Across Skills
+
+The `code-review-graph` MCP server is integrated into three skills. The rules below apply regardless of project:
+
+| Skill | When to call | What to call |
+|---|---|---|
+| `/plan` | Step 0, before any file reads | `get_minimal_context`, `get_impact_radius`, `query_graph(pattern="importers_of")` |
+| `/create-docs` | Step 2.0, before inventory | `get_minimal_context`, `get_impact_radius`, `query_graph(pattern="importers_of")` |
+| `/update-docs` | Before identifying affected docs | `query_graph(pattern="importers_of")` on each modified file |
+
+After any session that modifies files, run `code-review-graph update` (CLI) to keep the graph current.
+
+**Never use `code-review-graph detect-changes`** inside skill execution — it reads git-staged diffs only and is only valid in git hook contexts (e.g. PreCommit).
+
+Always start with `detail_level="minimal"`. Escalate to `"standard"` only if minimal output is insufficient.
 
 ### Single-Session Principle (Plan Execution)
 

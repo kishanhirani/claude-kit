@@ -85,6 +85,19 @@ Before anything else:
 3. Read the domain-specific `aicontext.md` if one exists
 4. Read `docs/doc-maintenance/documentationMaintenanceGuide.md` — formatting rules and changelog procedures
 
+### Code-Review-Graph Dependency Analysis (Step 0, after loading context)
+
+5. Identify the entry-point file(s) for the task (the main service, controller, or route being modified)
+6. Call the code-review-graph MCP tools in this order:
+   - `get_minimal_context(task="<task description>")` — surfaces highest-value files and communities
+   - `get_impact_radius(changed_files=["<entry-point>"], detail_level="minimal")` — risk-scored blast radius
+   - `query_graph(pattern="importers_of", target="<entry-point>", detail_level="minimal")` — direct dependents
+7. Use the output to build a "files to examine" list — read only those files in Step 2, skip unrelated files
+8. Record the graph output in `01-current-state.md` under a "Dependency Analysis" section
+
+> [!WARNING]
+> Never use `code-review-graph detect-changes` here — it reads git-staged diffs only. Use the MCP tools above.
+
 ---
 
 ## Step 1 — Pre-Planning Questions
@@ -132,7 +145,7 @@ Minimum questions to ask:
 
 Before writing any plan file:
 
-1. Read all in-scope source files
+1. Read files identified by the graph in Step 0 — prioritise high-risk dependents first, skip files not in the graph output
 2. Read the relevant domain docs to avoid contradictions
 3. Perform risk analysis across:
    - Security (auth bypass, injection, data leakage)
@@ -140,6 +153,9 @@ Before writing any plan file:
    - Regression (shared services used by other features)
    - Logic (edge cases, null handling, invalid states)
    - Email/notification (fire-and-forget detachment, duplicate sends)
+
+> [!NOTE]
+> The graph output from Step 0 is the reading list for Step 2. Do not read entire directories — only read files the graph identified plus the baseline files (router, schema, controller, validator for the affected domain).
 
 ---
 

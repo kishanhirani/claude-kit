@@ -75,7 +75,10 @@ Only read and plan-writing operations are permitted during the `/create-docs` ru
      ├── Step 0: Load context (reads any existing docs/ files; falls back to inlined rules)
      ├── Step 1: Q&A — asks user for project identity, scope, style, and priorities
      │           STOPS and WAITS for answers before proceeding
+     ├── Step 2.0: code-review-graph MCP analysis — identifies high-value files and module
+     │            boundaries before any source files are read
      ├── Step 2: Inventory codebase (skills, existing docs, source structure)
+     │           reads only files identified by graph + baseline files
      ├── Step 3: Identify all gaps (new-skill-doc, aicontext-drift, index-drift, etc.)
      ├── Step 4: Create plan folder at plans/create-docs-{date}-plan/
      │           (01-inventory.md includes Q&A answers for future session context)
@@ -182,11 +185,23 @@ The answers are recorded in `01-inventory.md` inside the plan folder so every fu
 
 ### Step 2 — Inventory the Codebase
 
-1. Glob `commands/*.md` and read each skill file — record name, frontmatter, and prompt body
-2. List all existing `docs/` files recursively
-3. Cross-reference against `docs/index.md` and `docs/commands/readme.md` (if they exist) to find what is missing, stale, or incomplete
-4. Read the project root `readme.md` and run `git log --oneline -20` for project context
-5. If source code is in scope: list top-level contents of each in-scope folder
+**Step 2.0 — Code-Review-Graph Analysis (run before any file reads):**
+
+1. Call `get_minimal_context(task="documentation inventory for <project name>")` — surfaces which communities and files are most central to the project
+2. For each in-scope top-level module, call `get_impact_radius(changed_files=["<entry-point>"], detail_level="minimal")` — shows which files depend on it, with risk scores
+3. Call `query_graph(pattern="importers_of", target="<entry-point>", detail_level="minimal")` for direct dependents
+4. Use the output to: prioritise which files to read, identify module boundaries that should map to `docs/` sections, and surface high-dependency files as high-value doc targets
+
+> [!WARNING]
+> Never use `code-review-graph detect-changes` here — it reads git-staged diffs only. Use the MCP tools above.
+
+**Step 2.1–2.3 — File Inventory (graph-guided):**
+
+5. Glob `commands/*.md` and read each skill file — record name, frontmatter, and prompt body
+6. List all existing `docs/` files recursively
+7. Cross-reference against `docs/index.md` and `docs/commands/readme.md` (if they exist) to find what is missing, stale, or incomplete
+8. Read the project root `readme.md` and run `git log --oneline -20` for project context
+9. If source code is in scope: read only files identified by the graph + baseline files — skip files not in the graph output
 
 ### Step 3 — Identify All Documentation Gaps
 

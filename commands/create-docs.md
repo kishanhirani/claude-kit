@@ -98,6 +98,22 @@ Present the questions grouped as shown. Ask them all in one message — do not d
 
 Use the Q&A answers from Step 1 to scope the inventory — only examine the parts of the codebase the user confirmed are in scope.
 
+### 2.0 — Code-Review-Graph Context (run first)
+
+Before any file reading, use the code-review-graph MCP tools to scope the analysis:
+
+1. Call `get_minimal_context(task="documentation inventory for <project name>")` — surfaces which communities and files are most central
+2. For each in-scope entry-point or top-level module, call `get_impact_radius(changed_files=["<entry-point>"], detail_level="minimal")` — shows which files depend on it, with risk scores
+3. Call `query_graph(pattern="importers_of", target="<entry-point>", detail_level="minimal")` for direct dependents
+
+Use the output to:
+- Prioritise which source files to read in Steps 2.1–2.3 (high-risk nodes first, skip unrelated files)
+- Identify module boundaries that should map to `docs/` sections
+- Surface files with many dependents that are high-value documentation targets
+
+> [!NOTE]
+> Never use `code-review-graph detect-changes` here — it reads git-staged diffs only, not explicit files. Use the MCP tools above.
+
 ### 2.1 — Skill Inventory
 
 1. Glob `commands/*.md` to list all skill files.
@@ -293,6 +309,24 @@ This session:
    ```
 2. Prepends a new row to `docs/doc-maintenance/changelog.md` (newest first).
 3. Updates `docs/doc-maintenance/documentationProgress.md` — sets status and progress for all rows, updates "Last Updated" date.
+
+---
+
+## Code-Review-Graph Integration
+
+The code-review-graph MCP server is used in this skill to reduce speculative file reading and ensure documentation targets are complete. Use the MCP tools — not the CLI — at every stage:
+
+| Stage | Tool Call | Purpose |
+|---|---|---|
+| Step 2.0 | `get_minimal_context(task="...")` | Surface highest-value files and module communities |
+| Step 2.0 | `get_impact_radius(changed_files=["<file>"], detail_level="minimal")` | Identify which files depend on each module — high dependents = high-value doc targets |
+| Step 2.0 | `query_graph(pattern="importers_of", target="<file>", detail_level="minimal")` | List direct importers of a module |
+| Step 3 | Use graph communities to define `docs/` section boundaries | Map graph communities to documentation sections |
+| After all sessions | `code-review-graph update` (CLI) | Keep the graph current after documentation changes |
+
+**Never use `code-review-graph detect-changes` in this skill** — it reads git-staged diffs, not explicit files, and is only valid in git hook contexts.
+
+**Context optimization:** Always start with `detail_level="minimal"`. Escalate to `"standard"` only if the minimal output is insufficient to distinguish module boundaries.
 
 ---
 

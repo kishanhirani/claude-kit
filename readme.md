@@ -54,9 +54,13 @@ This is not a Claude limitation. It is what happens to any stateful system when 
 
 Before reading any source code, Claude asks a structured set of pre-planning questions: which files are in scope, what the happy path looks like, what the failure cases are, what data dependencies exist, what documentation needs updating. You answer completely. Thin answers produce plans with unresolved assumptions — those assumptions surface as mistakes at execution time.
 
-**Step 2 — Claude reads the codebase and produces a plan folder**
+**Step 2 — Claude maps dependencies, then reads only what matters**
 
-After the Q&A, Claude reads every in-scope file, performs a risk assessment, and produces:
+After the Q&A, Claude calls the `code-review-graph` MCP server to build a precision reading list before touching any file. It calls `get_impact_radius` on the entry-point file to get a risk-scored blast radius, and `query_graph(pattern="importers_of")` to find every file that depends on it. The result is an exact list of files to read, ordered by risk score — high-risk dependents first, unrelated files skipped entirely.
+
+This replaces the naive approach of reading entire directories with precision file selection. On a medium-large codebase, that difference is roughly 27x less context consumed before the plan is even written. Less context consumed means the planning session stays sharp longer, the risk analysis is complete, and the final plan reflects the actual dependency graph — not a guess.
+
+After the file reads, Claude performs a full risk assessment and produces:
 
 ```
 plans/{your-task}-plan/
@@ -115,7 +119,7 @@ The zero-hallucination guarantee holds only if your codebase has up-to-date docu
 
 Without these files, Claude fills the gaps with assumptions. Assumptions are the source of hallucinations.
 
-**Run `/create-docs` before running `/plan` on any codebase that lacks an `aicontext.md`.** See `docs-example/` in this repo for a full-scale example of what complete documentation looks like — 6 modules, full API reference, service docs, schemas, workflows, and a 6-session changelog.
+**Run `/create-docs` before running `/plan` on any codebase that lacks an `aicontext.md`.**
 
 ---
 
@@ -126,7 +130,7 @@ Without these files, Claude fills the gaps with assumptions. Assumptions are the
 ```
 
 1. **`/create-docs`** — if your project has no `docs/aicontext.md`, run this first to build the documentation foundation that makes `/plan` reliable
-2. **`/plan`** — answer pre-planning questions, let Claude read the codebase, review the risk analysis, then approve the plan
+2. **`/plan`** — answer pre-planning questions, code-review-graph maps the blast radius, Claude reads only the identified files, risk analysis runs, plan is produced
 3. **Implement** — work through `EXECUTE.md` one session at a time, approving each before it executes
 4. **`/commit`** — stage your changes and generate a conventional commit message
 5. **`/daily-update`** — at end of day, get a clean summary of everything shipped
@@ -135,7 +139,25 @@ Without these files, Claude fills the gaps with assumptions. Assumptions are the
 
 ## Installation
 
-Skills are markdown files. Drop them into your project's Claude Code commands directory or reference them directly:
+### 1. Install code-review-graph
+
+`code-review-graph` is a required dependency. The `/plan`, `/create-docs`, and `/update-docs` skills call its MCP server to perform dependency analysis before reading any source files.
+
+```bash
+pip install code-review-graph
+```
+
+After installing, initialise the graph in your project root:
+
+```bash
+code-review-graph build
+```
+
+Run `code-review-graph update` after any session that modifies files to keep the graph current.
+
+### 2. Add the skills
+
+Skills are markdown files. Drop them into your project's Claude Code commands directory:
 
 ```bash
 # Clone the repo
@@ -153,16 +175,12 @@ Then open a Claude Code session and type `/` to confirm the skills appear in the
 
 ## Documentation
 
-`docs-example/` contains a full-scale example documentation set for a fictional Node.js/Express project called Orderflow. It demonstrates exactly what complete, AI-ready documentation looks like across 6 modules — use it as a reference when building documentation for your own project with `/create-docs`.
+Full documentation for claude-kit lives in [`docs/`](./docs/index.md). It covers every skill, the standard workflows, getting started, and documentation maintenance.
 
-| Folder | What it shows |
-|---|---|
-| `docs-example/module1-gettingStarted/` | Installation guide, environment config, verification steps |
-| `docs-example/module2-api/` | Full REST API reference — endpoints, request/response shapes, all error codes |
-| `docs-example/module3-services/` | Service layer docs with architecture diagrams, method signatures, error references |
-| `docs-example/module4-dataModels/` | MongoDB schema docs — fields, enums, indexes, constraints |
-| `docs-example/module5-workflows/` | End-to-end flow diagrams covering happy path, failure, cancellation, refund |
-| `docs-example/module6-docMaintenance/` | Maintenance guide, progress tracker, and 6-session changelog (json + md) |
+- [Commands](./docs/commands/readme.md) — skill-by-skill reference
+- [Workflows](./docs/workflows/readme.md) — the standard development loop and end-to-end patterns
+- [Getting Started](./docs/gettingStarted/readme.md) — prerequisites and installation
+- [Documentation Maintenance](./docs/doc-maintenance/documentationMaintenanceGuide.md) — how to keep docs in sync with code
 
 ---
 

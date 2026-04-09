@@ -23,6 +23,28 @@ Before using claude-kit you need:
 - **Claude Code CLI** installed and authenticated (`claude` available in your terminal)
 - **Git** installed and a git repository initialised in your project
 - A working **Claude Code** subscription with skill support enabled
+- **code-review-graph** installed globally — required by `/plan`, `/create-docs`, and `/update-docs` for dependency analysis
+
+Install code-review-graph:
+
+```bash
+npm install -g code-review-graph
+```
+
+After installing, build the dependency graph in your project root:
+
+```bash
+code-review-graph build
+```
+
+Run this once per project before using any skill that performs codebase analysis. Subsequent updates use:
+
+```bash
+code-review-graph update
+```
+
+> [!NOTE]
+> `code-review-graph` also exposes an MCP server. Claude Code skills call it via the MCP tools (`get_impact_radius`, `query_graph`, `get_minimal_context`) — you do not need to invoke these manually. The `build` and `update` CLI commands are the only ones you need to run directly.
 
 ---
 

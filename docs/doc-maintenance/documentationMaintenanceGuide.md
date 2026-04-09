@@ -16,6 +16,7 @@ This guide defines when, what, and how to update documentation after making chan
 - [Step-by-Step Process](#step-by-step-process)
 - [Changelog Entry Format](#changelog-entry-format)
 - [AI Context Sync Protocol](#ai-context-sync-protocol)
+- [Code-Review-Graph Integration](#code-review-graph-integration)
 - [Documentation File Map](#documentation-file-map)
 - [Checklist Template](#checklist-template)
 
@@ -186,6 +187,50 @@ After any documentation change:
 2. **Global context:** If you added a new domain folder or changed directory structure, update the `🗺 Directory Mapping` in `docs/aicontext.md`
 3. **Key Terminology:** If a new concept was introduced, add a one-sentence definition to the `📚 Key Terminology` section of `docs/aicontext.md`
 4. **Critical Behaviours:** If a foundational system behaviour changed (e.g., Single-Session Principle modified), update `⚙️ Critical System Behaviours` in `docs/aicontext.md`
+
+---
+
+## Code-Review-Graph Integration
+
+The `code-review-graph` MCP server identifies which files depend on any modified file, so documentation updates are complete rather than guessed.
+
+### When to Use It
+
+Use the graph tools whenever:
+- Running `/update-docs` after code changes
+- Manually identifying which `docs/` files a code change affects
+- Verifying no affected module was missed after a large refactor
+
+### How to Use It in `/update-docs`
+
+For each source file modified in the session:
+
+```
+query_graph(pattern="importers_of", target="<modified-file>", detail_level="minimal")
+```
+
+This returns the files that import the modified file. Map each importer to its corresponding `docs/` file using the [Documentation File Map](#documentation-file-map) below.
+
+**Example:** If `commands/plan.md` was modified:
+1. Call `query_graph(pattern="importers_of", target="commands/plan.md", detail_level="minimal")`
+2. Map results → `docs/commands/planCommand.md`, `docs/workflows/readme.md`
+3. Update only the sections in those files that reflect the changed behaviour
+
+### After Every Session
+
+After any session that creates or modifies files, run:
+
+```bash
+code-review-graph update
+```
+
+This performs an incremental graph update (faster than a full rebuild) so subsequent calls to `get_impact_radius` or `query_graph` reflect the current state.
+
+> [!NOTE]
+> Always use `detail_level="minimal"` on all MCP tool calls. Only escalate to `"standard"` when minimal output is insufficient to identify module boundaries.
+
+> [!WARNING]
+> Never use `code-review-graph detect-changes` inside skill execution. It reads git-staged diffs only and is only valid in git hook contexts (PreCommit hooks). Use the MCP tools above instead.
 
 ---
 

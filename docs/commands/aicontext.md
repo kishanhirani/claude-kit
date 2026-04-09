@@ -21,6 +21,7 @@ The **Commands** section documents every skill file in `commands/`. It covers sk
 - **Read-only Skill:** A skill that is explicitly constrained from making any mutations (e.g., no `git commit`, no file writes). Example: `/commit`.
 - **Single-Session Principle:** The core constraint of `/plan` and `/create-docs` execution — Claude executes one session at a time, never previews future sessions, and always waits for user approval before proceeding.
 - **Documentation Gap:** A discrepancy between what exists in `commands/` and what is documented in `docs/` — classified as new-skill-doc, missing-section, stale-skill-doc, incomplete-skill-doc, aicontext-drift, index-drift, or changelog-missing.
+- **code-review-graph:** A globally installed CLI and MCP server used by `/plan`, `/create-docs`, and `/update-docs`. Provides `get_minimal_context`, `get_impact_radius`, and `query_graph` MCP tools that identify which files are affected by a task before any source files are read. Skills call these tools — never the `detect-changes` CLI subcommand.
 
 ---
 

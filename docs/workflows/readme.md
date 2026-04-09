@@ -162,10 +162,13 @@ claude-kit is designed around a repeatable daily loop that keeps implementation,
 /plan    →    implement (session-by-session)    →    /commit    →    /daily-update
 ```
 
-1. **`/plan`** — before writing any code, create a structured plan with pre-planning questions and codebase analysis
+1. **`/plan`** — before writing any code, create a structured plan with pre-planning questions and graph-guided codebase analysis
 2. **Implement** — execute sessions one at a time via `EXECUTE.md`, waiting for approval after each
 3. **`/commit`** — once a session or logical unit is complete, generate a conventional commit message
 4. **`/daily-update`** — at end of day, generate a concise summary of all work completed
+
+> [!NOTE]
+> `/plan` uses the `code-review-graph` MCP tools in Step 0 to identify which files are affected by the task before reading any source code. This replaces speculative directory-wide reads with precision file selection, reducing context usage by ~27x. See [Code-Review-Graph Integration](../doc-maintenance/documentationMaintenanceGuide.md#code-review-graph-integration) for details.
 
 ---
 
@@ -217,11 +220,13 @@ claude-kit is designed around a repeatable daily loop that keeps implementation,
 
 ### Steps
 
-1. Identify which `docs/` files are affected by reading the code change (use `git diff`)
-2. Update the affected documentation files directly — no plan needed for pure doc updates
-3. Update `docs/doc-maintenance/changelog.json` and `docs/doc-maintenance/changelog.md`
-4. Update `docs/doc-maintenance/documentationProgress.md` if coverage changed
-5. Run `/commit` with type `docs`
+1. For each modified source file, call `query_graph(pattern="importers_of", target="<file>", detail_level="minimal")` to find dependents that may also need doc updates
+2. Map the modified files and their dependents to `docs/` files using the [Documentation File Map](../doc-maintenance/documentationMaintenanceGuide.md#documentation-file-map)
+3. Update the affected documentation files directly — no plan needed for pure doc updates
+4. Update `docs/doc-maintenance/changelog.json` and `docs/doc-maintenance/changelog.md`
+5. Update `docs/doc-maintenance/documentationProgress.md` if coverage changed
+6. Run `code-review-graph update` to keep the graph current
+7. Run `/commit` with type `docs`
 
 ---
 
@@ -251,3 +256,5 @@ claude-kit is designed around a repeatable daily loop that keeps implementation,
 | Batching sessions | Executing 3 sessions at once defeats the verification step and makes rollback difficult | One session, one approval, one commit |
 | Documentation later | Docs written weeks after code changes are inaccurate and miss nuance | Execute the documentation session as the last step in every plan |
 | Overwide `allowed-tools` | Granting `Bash(*)` to a read-only skill defeats the safety constraint | Scope `allowed-tools` to exactly what the skill needs |
+| Reading directories speculatively | Reading entire `src/` folders to find affected files wastes context and misses transitive dependents | Use `get_impact_radius` and `query_graph` from code-review-graph before reading any source files |
+| Skipping graph update | Not running `code-review-graph update` after a session leaves the graph stale for the next one | Always run `code-review-graph update` after any session that modifies files |

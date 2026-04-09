@@ -18,6 +18,7 @@ The **Workflows** section documents how the skills in `commands/` are composed i
 - **Session:** A single, bounded unit of implementation work in a plan. Must be executed one at a time with user approval between each.
 - **Single-Session Principle:** The hard constraint that no plan session may be previewed, batched, or executed without prior approval.
 - **Pre-Planning Questions:** The mandatory questions in Step 1 of `/plan` that must be answered before any codebase reading or plan writing begins.
+- **code-review-graph:** A globally installed CLI and MCP server that builds a dependency graph of the codebase. Used in `/plan` Step 0 and `/update-docs` to identify which files are affected by a change before reading any source files. MCP tools (`get_impact_radius`, `query_graph`) are called during skills; the `update` CLI command is run after sessions to keep the graph current.
 
 ---
 
@@ -34,6 +35,7 @@ The **Workflows** section documents how the skills in `commands/` are composed i
 - `docs/workflows/readme.md` — workflows overview
 - `docs/commands/readme.md` — skill reference
 - `docs/commands/planCommand.md` — plan skill detail (especially Single-Session Principle)
+- `docs/doc-maintenance/documentationMaintenanceGuide.md#code-review-graph-integration` — graph tool usage in doc workflows
 - `docs/index.md` — master index
 
 ---
@@ -52,3 +54,4 @@ The **Workflows** section documents how the skills in `commands/` are composed i
 1. All workflow steps must accurately reflect current skill behaviour — read `docs/commands/` before editing workflows
 2. Never suggest skipping pre-planning questions or the Single-Session Principle
 3. Do not invent workflow steps that reference tools or skills not documented in `commands/`
+4. code-review-graph MCP tools (`get_impact_radius`, `query_graph`) must always precede source file reads in `/plan` and `/update-docs` — never document a workflow that skips this step
